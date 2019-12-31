@@ -1,0 +1,262 @@
+
+<!DOCTYPE html>
+<html lang="en" class="loading">
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>《基于Django框架开发blog项目》 - Wuhoooooo</title>
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="google" content="notranslate" />
+    <meta name="keywords" content="Fechin,"> 
+    <meta name="description" content="meat egg onion chicken,1.编写Model层的代码创建blog，config，comment的APP，在其中的models.py填写代码
+blog/models.py层代码如下：
+‘’’from django.db imp,"> 
+    <meta name="author" content="chanffly"> 
+    <link rel="alternative" href="atom.xml" title="Wuhoooooo" type="application/atom+xml"> 
+    <link rel="icon" href="/img/favicon.png"> 
+    
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+
+    
+<link rel="stylesheet" href="/css/diaspora.css">
+
+    <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+    <script>
+         (adsbygoogle = window.adsbygoogle || []).push({
+              google_ad_client: "ca-pub-8691406134231910",
+              enable_page_level_ads: true
+         });
+    </script>
+    <script async custom-element="amp-auto-ads"
+        src="https://cdn.ampproject.org/v0/amp-auto-ads-0.1.js">
+    </script>
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+<body class="loading">
+    <span id="config-title" style="display:none">Wuhoooooo</span>
+    <div id="loader"></div>
+    <div id="single">
+    <div id="top" style="display: block;">
+    <div class="bar" style="width: 0;"></div>
+    <a class="icon-home image-icon" href="javascript:;" data-url="http://yoursite.com"></a>
+    <div title="播放/暂停" class="icon-play"></div>
+    <h3 class="subtitle">《基于Django框架开发blog项目》</h3>
+    <div class="social">
+        <!--<div class="like-icon">-->
+            <!--<a href="javascript:;" class="likeThis active"><span class="icon-like"></span><span class="count">76</span></a>-->
+        <!--</div>-->
+        <div>
+            <div class="share">
+                <a title="获取二维码" class="icon-scan" href="javascript:;"></a>
+            </div>
+            <div id="qr"></div>
+        </div>
+    </div>
+    <div class="scrollbar"></div>
+</div>
+
+    <div class="section">
+        <div class="article">
+    <div class='main'>
+        <h1 class="title">《基于Django框架开发blog项目》</h1>
+        <div class="stuff">
+            <span>十二月 31, 2019</span>
+            
+
+        </div>
+        <div class="content markdown">
+            <p>1.编写Model层的代码<br>创建blog，config，comment的APP，在其中的models.py填写代码</p>
+<p>blog/models.py层代码如下：</p>
+<p>‘’’<br>from django.db import models</p>
+<p>from django.contrib.auth.models import User</p>
+<p>class Category(models.Model):<br>    STATUS_NORMAL = 1<br>    STATUS_DELETE = 0<br>    STATUS_ITEMS = (<br>        (STATUS_NORMAL, ‘正常’),<br>        (STATUS_DELETE, ‘删除’),<br>    )</p>
+<pre><code>name = models.CharField(max_length=50, verbose_name=&quot;名称&quot;)
+status = models.PositiveIntegerField(default=STATUS_NORMAL,
+        choices=STATUS_ITEMS, verbose_name=&quot;状态&quot;)
+is_nav = models.BooleanField(default=False, verbose_name=&quot;是否为导航&quot;)
+owner = models.ForeignKey(User, verbose_name=&quot;作者&quot;,on_delete=models.CASCADE,)
+created_time = models.DateTimeField(auto_now_add=True, verbose_name=&quot;创建时间&quot;)
+
+class Meta:
+    verbose_name = verbose_name_plural = &apos;分类&apos;</code></pre><p>class Tag(models.Model):<br>    STATUS_NORMAL = 1<br>    STATUS_DELETE = 0<br>    STATUS_ITEMS = (<br>        (STATUS_NORMAL, ‘正常’),<br>        (STATUS_DELETE, ‘删除’),<br>    )</p>
+<pre><code>name = models.CharField(max_length=10, verbose_name=&quot;名称&quot;)
+status = models.PositiveIntegerField(default=STATUS_NORMAL,
+                    choices=STATUS_ITEMS, verbose_name=&quot;状态&quot;)
+owner = models.ForeignKey(User, verbose_name=&quot;作者&quot;,on_delete=models.CASCADE,)
+created_time = models.DateTimeField(auto_now_add=True, verbose_name=&quot;创建时间&quot;)
+
+class Meta:
+    verbose_name = verbose_name_plural = &apos;标签&apos;</code></pre><p>class Post(models.Model):<br>    STATUS_NORMAL = 1<br>    STATUS_DELETE = 0<br>    STATUS_DRAFT = 2<br>    STATUS_ITEMS = (<br>        (STATUS_NORMAL, ‘正常’),<br>        (STATUS_DELETE, ‘删除’),<br>        (STATUS_DRAFT, ‘草稿’),<br>    )</p>
+<pre><code>title = models.CharField(max_length=255, verbose_name=&quot;标题&quot;)
+desc = models.CharField(max_length=1024, blank=True, verbose_name=&quot;摘要&quot;)
+content = models.TextField(verbose_name=&quot;正文&quot;, help_text=&quot;正文必须为MarkDown格式&quot;)
+status = models.PositiveIntegerField(default=STATUS_NORMAL,
+    choices=STATUS_ITEMS, verbose_name=&quot;状态&quot;)
+category = models.ForeignKey(Category, verbose_name=&quot;分类&quot;,on_delete=models.CASCADE,)
+tag = models.ManyToManyField(Tag, verbose_name=&quot;标签&quot;)
+owner = models.ForeignKey(User, verbose_name=&quot;作者&quot;,on_delete=models.CASCADE,)
+created_time = models.DateTimeField(auto_now_add=True, verbose_name=&quot;创建时间&quot;)
+
+class Meta:
+    verbose_name = verbose_name_plural = &quot;文章&quot;
+    ordering = [&apos;-id&apos;]  #根据id进行降序排列</code></pre><p>‘’’        </p>
+<p>config/models.py层代码如下：</p>
+<p>‘’’<br>from django.db import models</p>
+<p>from django.contrib.auth.models import User</p>
+<p>class Link(models.Model):<br>    STATUS_NORMAL = 1<br>    STATUS_DELETE = 0<br>    STATUS_ITEMS = (<br>        (STATUS_NORMAL, ‘正常’),<br>        (STATUS_DELETE, ‘删除’),<br>    )</p>
+<pre><code>title = models.CharField(max_length=50, verbose_name=&quot;标题&quot;)
+href = models.URLField(verbose_name=&quot;链接&quot;) #默认长度为200
+status = models.PositiveIntegerField(default=STATUS_NORMAL, choices=STATUS_ITEMS,
+                                     verbose_name=&quot;状态&quot;)
+weight = models.PositiveIntegerField(default=1, choices=zip(range(1,6),
+                    range(1,6)),verbose_name=&quot;权重&quot;,help_text=&quot;权重高展示顺序靠前&quot;)
+
+owner = models.ForeignKey(User,verbose_name=&quot;作者&quot;,on_delete=models.CASCADE,)
+created_time = models.DateTimeField(auto_now_add=True, verbose_name=&quot;创建时间&quot;)
+
+class Meta:
+    verbose_name = verbose_name_plural = &quot;友链&quot;</code></pre><p>class SideBar(models.Model):<br>    STATUS_SHOW = 1<br>    STATUS_HIDE = 0<br>    STATUS_ITEMS = (<br>        (STATUS_SHOW, ‘展示’),<br>        (STATUS_HIDE, ‘隐藏’),<br>    )<br>    SIDE_TYPE = (<br>        (1, ‘HTML’),<br>        (2, ‘最新文章’),<br>        (3, ‘最热文章’),<br>        (4, ‘最近文章’),<br>    )</p>
+<pre><code>title = models.CharField(max_length=50, verbose_name=&quot;标题&quot;)
+display_type = models.PositiveIntegerField(default=1, choices=SIDE_TYPE,
+                                           verbose_name=&quot;展示类型&quot;)
+content = models.CharField(max_length=500, blank=True, verbose_name=&quot;内容&quot;,
+                           help_text=&quot;如果设置的不是HTML类型，可为空&quot;)
+
+status = models.PositiveIntegerField(default=STATUS_SHOW, choices=STATUS_ITEMS,
+                                     verbose_name=&quot;状态&quot;)
+owner = models.ForeignKey(User,verbose_name=&quot;作者&quot;,on_delete=models.CASCADE)
+created_time = models.DateTimeField(auto_now_add=True,verbose_name=&quot;创建时间&quot;)
+
+class Meta:
+    verbose_name = verbose_name_plural = &quot;侧边栏&quot;</code></pre><p>‘’’</p>
+<p>comment/models.py层代码如下：</p>
+<p>‘’’<br>from django.db import models</p>
+<p>from blog.models import Post</p>
+<p>class Comment(models.Model):<br>    STATUS_NORMAL = 1<br>    STATUS_DELETE = 0<br>    STATUS_ITEMS = (<br>        (STATUS_NORMAL, ‘正常’),<br>        (STATUS_DELETE, ‘删除’),<br>    )<br>    target = models.ForeignKey(Post, verbose_name=”评论目标”,on_delete=models.CASCADE,)<br>    content = models.CharField(max_length=2000, verbose_name=”内容”)<br>    nickname = models.CharField(max_length=50, verbose_name=”昵称”)<br>    website = models.URLField(verbose_name=”网站”)<br>    email = models.EmailField(verbose_name=”邮箱”)<br>    status = models.PositiveIntegerField(default=STATUS_NORMAL,<br>                choices=STATUS_ITEMS,verbose_name=”状态”)<br>    created_time = models.DateTimeField(auto_now_add=True, verbose_name=”创建时间”)</p>
+<pre><code>class Meta:
+    verbose_name = verbose_name_plural = &quot;评论&quot;</code></pre><p>‘’’</p>
+<p>遇到的问题：按照书本敲代码不要打错即可，注意在Django2.0以后，<br>定义外键和一对一关系的时候需要加on_delete选项<br>即在ForeignKey中加入：on_delete=models.CASCADE,如上述代码所示<br>不然会报错：TypeError: <strong>init</strong>() missing 1 required positional argument: ‘on_delete’</p>
+<p>2.修改setting/base.py</p>
+<p>INSTALLED_APPS = [<br>    ‘blog’,<br>    ‘config’,<br>    ‘comment’,</p>
+<pre><code>&apos;django.contrib.admin&apos;,
+&apos;django.contrib.auth&apos;,
+&apos;django.contrib.contenttypes&apos;,
+&apos;django.contrib.sessions&apos;,
+&apos;django.contrib.messages&apos;,
+&apos;django.contrib.staticfiles&apos;,</code></pre><p>]</p>
+<p>加入‘blog’,’config’,’comment’的APP，使Django启动时能够识别这些APP</p>
+<p>遇到的问题：暂无</p>
+<p>3.在Typeidea目录下创建数据库</p>
+<p>使用python manage.py makemigrations<br>    python manage.py migrate<br>这两条命令创建数据库并执行迁移操作</p>
+<p>遇到的问题：暂无</p>
+<p>目前进度★</p>
+
+            <!--[if lt IE 9]><script>document.createElement('audio');</script><![endif]-->
+            <audio id="audio" loop="1" preload="auto" controls="controls" data-autoplay="false">
+                <source type="audio/mpeg" src="">
+            </audio>
+            
+                <ul id="audio-list" style="display:none">
+                    
+                        
+                            <li title='0' data-url='http://link.hhtjim.com/163/5146554.mp3'></li>
+                        
+                    
+                        
+                            <li title='1' data-url='http://link.hhtjim.com/qq/001faIUs4M2zna.mp3'></li>
+                        
+                    
+                </ul>
+            
+        </div>
+        
+    <div id='gitalk-container' class="comment link"
+        data-ae='false'
+        data-ci=''
+        data-cs=''
+        data-r=''
+        data-o=''
+        data-a=''
+        data-d='false'
+    >查看评论</div>
+
+
+    </div>
+    
+</div>
+
+
+    </div>
+</div>
+</body>
+
+<script src="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+
+
+<script src="//lib.baomitu.com/jquery/1.8.3/jquery.min.js"></script>
+<script src="/js/plugin.js"></script>
+<script src="/js/diaspora.js"></script>
+
+
+<link rel="stylesheet" href="/photoswipe/photoswipe.css">
+<link rel="stylesheet" href="/photoswipe/default-skin/default-skin.css">
+
+
+<script src="/photoswipe/photoswipe.min.js"></script>
+<script src="/photoswipe/photoswipe-ui-default.min.js"></script>
+
+
+<!-- Root element of PhotoSwipe. Must have class pswp. -->
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+    <!-- Background of PhotoSwipe. 
+         It's a separate element as animating opacity is faster than rgba(). -->
+    <div class="pswp__bg"></div>
+    <!-- Slides wrapper with overflow:hidden. -->
+    <div class="pswp__scroll-wrap">
+        <!-- Container that holds slides. 
+            PhotoSwipe keeps only 3 of them in the DOM to save memory.
+            Don't modify these 3 pswp__item elements, data is added later on. -->
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+        <!-- Default (PhotoSwipeUI_Default) interface on top of sliding area. Can be changed. -->
+        <div class="pswp__ui pswp__ui--hidden">
+            <div class="pswp__top-bar">
+                <!--  Controls are self-explanatory. Order can be changed. -->
+                <div class="pswp__counter"></div>
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+                <!-- Preloader demo http://codepen.io/dimsemenov/pen/yyBWoR -->
+                <!-- element will get class pswp__preloader--active when preloader is running -->
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                      <div class="pswp__preloader__cut">
+                        <div class="pswp__preloader__donut"></div>
+                      </div>
+                    </div>
+                </div>
+            </div>
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div> 
+            </div>
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+</html>
