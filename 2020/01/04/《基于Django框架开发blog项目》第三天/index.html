@@ -1,0 +1,261 @@
+
+<!DOCTYPE html>
+<html lang="en" class="loading">
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>《基于Django框架开发blog项目》第三天 - Wuhoooooo</title>
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="google" content="notranslate" />
+    <meta name="keywords" content="Fechin,"> 
+    <meta name="description" content="meat egg onion chicken,一，根据需求定制admin
+1.定制list页面
+blog/admin界面PostAdmin上方定义如下代码：
+“””class CategoryOwnerFilter(admin.SimpleLi,"> 
+    <meta name="author" content="chanffly"> 
+    <link rel="alternative" href="atom.xml" title="Wuhoooooo" type="application/atom+xml"> 
+    <link rel="icon" href="/img/favicon.png"> 
+    
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+
+    
+<link rel="stylesheet" href="/css/diaspora.css">
+
+    <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+    <script>
+         (adsbygoogle = window.adsbygoogle || []).push({
+              google_ad_client: "ca-pub-8691406134231910",
+              enable_page_level_ads: true
+         });
+    </script>
+    <script async custom-element="amp-auto-ads"
+        src="https://cdn.ampproject.org/v0/amp-auto-ads-0.1.js">
+    </script>
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+<body class="loading">
+    <span id="config-title" style="display:none">Wuhoooooo</span>
+    <div id="loader"></div>
+    <div id="single">
+    <div id="top" style="display: block;">
+    <div class="bar" style="width: 0;"></div>
+    <a class="icon-home image-icon" href="javascript:;" data-url="http://yoursite.com"></a>
+    <div title="播放/暂停" class="icon-play"></div>
+    <h3 class="subtitle">《基于Django框架开发blog项目》第三天</h3>
+    <div class="social">
+        <!--<div class="like-icon">-->
+            <!--<a href="javascript:;" class="likeThis active"><span class="icon-like"></span><span class="count">76</span></a>-->
+        <!--</div>-->
+        <div>
+            <div class="share">
+                <a title="获取二维码" class="icon-scan" href="javascript:;"></a>
+            </div>
+            <div id="qr"></div>
+        </div>
+    </div>
+    <div class="scrollbar"></div>
+</div>
+
+    <div class="section">
+        <div class="article">
+    <div class='main'>
+        <h1 class="title">《基于Django框架开发blog项目》第三天</h1>
+        <div class="stuff">
+            <span>一月 04, 2020</span>
+            
+
+        </div>
+        <div class="content markdown">
+            <p>一，根据需求定制admin</p>
+<p>1.定制list页面</p>
+<p>blog/admin界面PostAdmin上方定义如下代码：</p>
+<p>“””<br>class CategoryOwnerFilter(admin.SimpleListFilter):<br>    “””自定义过滤器只展示当前用户分类”””</p>
+<pre><code>title = &apos;分类过滤器&apos;
+parameter_name = &apos;owner_category&apos;
+
+def lookups(self, request, model_admin):
+    return Category.objects.filter(owner=request.user).values_list(&apos;id&apos;,&apos;name&apos;)
+
+def queryset(self, request, queryset):
+    category_id = self.value()
+    if category_id:
+        return queryset.filter(category_id=self.value())
+    return queryset</code></pre><p>“””</p>
+<p>在blog/admin界面PostAdmin类最后添加以下代码：</p>
+<p>“””<br>    def get_queryset(self, request):<br>        qs = super(PostAdmin, self).get_queryset(request)<br>        return qs.filter(owner = request.user)<br>“””</p>
+<p>2.编辑页面的配置</p>
+<p>blog/admin界面修改如下代码：</p>
+<p>“””<br>    exclude = (‘owner’,)</p>
+<pre><code>fieldsets = (                  #用fieldsets将fields代替
+    (&apos;基础配置&apos;, {
+        &apos;description&apos;: &apos;基础配置描述&apos;,
+        &apos;fields&apos;: (
+            (&apos;title&apos;,&apos;category&apos;),
+            &apos;status&apos;
+        ),
+    }),
+    (&apos;内容&apos;, {
+        &apos;fields&apos;: (
+            &apos;desc&apos;,
+            &apos;content&apos;,
+        ),
+    }),
+    (&apos;额外信息&apos;, {
+        &apos;classes&apos;: (&apos;collapse&apos;,),
+        &apos;fields&apos;: (&apos;tag&apos;,),
+    })
+)</code></pre><p>“””</p>
+<p>自定义静态资源引入：<br>在blog/admin界面PostAdmin类最后添加以下代码：</p>
+<p>“””<br>class PostAdmin(admin.ModelAdmin):<br>    #省略其他代码</p>
+<pre><code>class Media:
+    css = {
+        &apos;all&apos;: (&quot;http://cdn.bootcss.com/bootstrap/4.0.0-beta.2/css/&quot;
+                &quot;bootstrap.min.css&quot;,),
+    }
+    js = (&apos;https://cdn.bootcss.com/bootstrap/4.0.0-beta.2/js/bootstrap.bundle.js&apos;,)</code></pre><p>“””</p>
+<p>3.自定义Form：</p>
+<p>3.1在blog下新建文件adminforms.py，并添加如下代码：</p>
+<p>“””</p>
+<p>from django import forms</p>
+<p>class PostAdminForm(forms.ModelForm):<br>    desc = forms.CharField(widget=forms.Textarea, label=’摘要’, required=False)<br>“””</p>
+<p>接下来将其配置到admin中：</p>
+<p>“””</p>
+<p>from .adminforms import PostAdminForm</p>
+<p>class PostAdmin(admin.ModelAdmin):<br>    form = PostAdminForm</p>
+<p>“””</p>
+<p>添加完后刷新页面，就能看到文章描述字段已经改为Textarea组件了</p>
+<p>3.2在同一页面编辑关联数据：</p>
+<p>在blog/admin文件中增加：<br>“””</p>
+<p>class PostInline(admin.TabularInline):<br>    fields = (‘title’,’desc’)<br>    extra = 1    #控制额外多几个<br>    model = Post</p>
+<p>class CategoryAdmin(admin.ModelAdmin):<br>    inlines = [PostInline, ]</p>
+<p>“””</p>
+<p>4,定制site</p>
+<p>4.1 在Typeidea/Typeidea中新增文件：custom_site.py,并添加如下代码：</p>
+<p>“””</p>
+<p>from django.contrib.admin import AdminSite</p>
+<p>class CustomSite(AdminSite):<br>    site_header = ‘Typeidea’<br>    site_title = ‘Typeidea管理后台’<br>    index_title = ‘首页’</p>
+<p>custom_site = CustomSite(name=’cus_admin’)<br>“””</p>
+<p>在所有APP的@admin.register(XXX)修改为@admin.register(XXX,site=custom_site)<br>在此之前需要在模块上面引入custom_site:<br>from Typeidea.custom_site import custom_site</p>
+<p>4.2 修改其他文件：</p>
+<p>“””</p>
+<p>blog/admin修改如下：</p>
+<p>“””<br>    def operator(self,obj):<br>        return format_html(<br>            ‘<a href="{}">编辑</a>‘,<br>            reverse(‘cus_admin:blog_post_change’,args=(obj.id,))<br>        )<br>“””</p>
+<p>urls.py修改如下：</p>
+<p>“””<br>from django.conf.urls import url<br>from django.contrib import admin</p>
+<p>from .custom_site import custom_site</p>
+<p>urlpatterns = [<br>    url(r’^super_admin/‘,admin.site.urls),<br>    url(r’^admin/‘, custom_site.urls),<br>]</p>
+<p>“””</p>
+<p>这样就有两套后台地址了，一套用来管理用户，一套用来管理业务</p>
+<p>总结：</p>
+<p>遇到的问题：Typeidea/manage.py文件中<br>os.environ.setdefault(‘DJANGO_SETTINGS_MODULE’, ‘Typeidea.settings’)<br>“setting”未加s，导致manage功能不可用，加上s即可。</p>
+<p>目前进度★</p>
+
+            <!--[if lt IE 9]><script>document.createElement('audio');</script><![endif]-->
+            <audio id="audio" loop="1" preload="auto" controls="controls" data-autoplay="false">
+                <source type="audio/mpeg" src="">
+            </audio>
+            
+                <ul id="audio-list" style="display:none">
+                    
+                        
+                            <li title='0' data-url='http://link.hhtjim.com/163/5146554.mp3'></li>
+                        
+                    
+                        
+                            <li title='1' data-url='http://link.hhtjim.com/qq/001faIUs4M2zna.mp3'></li>
+                        
+                    
+                </ul>
+            
+        </div>
+        
+    <div id='gitalk-container' class="comment link"
+        data-ae='false'
+        data-ci=''
+        data-cs=''
+        data-r=''
+        data-o=''
+        data-a=''
+        data-d='false'
+    >查看评论</div>
+
+
+    </div>
+    
+</div>
+
+
+    </div>
+</div>
+</body>
+
+<script src="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+
+
+<script src="//lib.baomitu.com/jquery/1.8.3/jquery.min.js"></script>
+<script src="/js/plugin.js"></script>
+<script src="/js/diaspora.js"></script>
+
+
+<link rel="stylesheet" href="/photoswipe/photoswipe.css">
+<link rel="stylesheet" href="/photoswipe/default-skin/default-skin.css">
+
+
+<script src="/photoswipe/photoswipe.min.js"></script>
+<script src="/photoswipe/photoswipe-ui-default.min.js"></script>
+
+
+<!-- Root element of PhotoSwipe. Must have class pswp. -->
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+    <!-- Background of PhotoSwipe. 
+         It's a separate element as animating opacity is faster than rgba(). -->
+    <div class="pswp__bg"></div>
+    <!-- Slides wrapper with overflow:hidden. -->
+    <div class="pswp__scroll-wrap">
+        <!-- Container that holds slides. 
+            PhotoSwipe keeps only 3 of them in the DOM to save memory.
+            Don't modify these 3 pswp__item elements, data is added later on. -->
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+        <!-- Default (PhotoSwipeUI_Default) interface on top of sliding area. Can be changed. -->
+        <div class="pswp__ui pswp__ui--hidden">
+            <div class="pswp__top-bar">
+                <!--  Controls are self-explanatory. Order can be changed. -->
+                <div class="pswp__counter"></div>
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+                <!-- Preloader demo http://codepen.io/dimsemenov/pen/yyBWoR -->
+                <!-- element will get class pswp__preloader--active when preloader is running -->
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                      <div class="pswp__preloader__cut">
+                        <div class="pswp__preloader__donut"></div>
+                      </div>
+                    </div>
+                </div>
+            </div>
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div> 
+            </div>
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+</html>
