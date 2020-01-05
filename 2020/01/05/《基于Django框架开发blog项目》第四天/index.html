@@ -1,0 +1,302 @@
+
+<!DOCTYPE html>
+<html lang="en" class="loading">
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>《基于Django框架开发blog项目》第四天 - Wuhoooooo</title>
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="google" content="notranslate" />
+    <meta name="keywords" content="Fechin,"> 
+    <meta name="description" content="meat egg onion chicken,一.搭建基础结构与展示文章数据
+1编写URL代码在typeidea/urls.py下添加代码：
+“””
+from django.conf.urls import urlfrom django.con,"> 
+    <meta name="author" content="chanffly"> 
+    <link rel="alternative" href="atom.xml" title="Wuhoooooo" type="application/atom+xml"> 
+    <link rel="icon" href="/img/favicon.png"> 
+    
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+
+    
+<link rel="stylesheet" href="/css/diaspora.css">
+
+    <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+    <script>
+         (adsbygoogle = window.adsbygoogle || []).push({
+              google_ad_client: "ca-pub-8691406134231910",
+              enable_page_level_ads: true
+         });
+    </script>
+    <script async custom-element="amp-auto-ads"
+        src="https://cdn.ampproject.org/v0/amp-auto-ads-0.1.js">
+    </script>
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+<body class="loading">
+    <span id="config-title" style="display:none">Wuhoooooo</span>
+    <div id="loader"></div>
+    <div id="single">
+    <div id="top" style="display: block;">
+    <div class="bar" style="width: 0;"></div>
+    <a class="icon-home image-icon" href="javascript:;" data-url="http://yoursite.com"></a>
+    <div title="播放/暂停" class="icon-play"></div>
+    <h3 class="subtitle">《基于Django框架开发blog项目》第四天</h3>
+    <div class="social">
+        <!--<div class="like-icon">-->
+            <!--<a href="javascript:;" class="likeThis active"><span class="icon-like"></span><span class="count">76</span></a>-->
+        <!--</div>-->
+        <div>
+            <div class="share">
+                <a title="获取二维码" class="icon-scan" href="javascript:;"></a>
+            </div>
+            <div id="qr"></div>
+        </div>
+    </div>
+    <div class="scrollbar"></div>
+</div>
+
+    <div class="section">
+        <div class="article">
+    <div class='main'>
+        <h1 class="title">《基于Django框架开发blog项目》第四天</h1>
+        <div class="stuff">
+            <span>一月 05, 2020</span>
+            
+
+        </div>
+        <div class="content markdown">
+            <p>一.搭建基础结构与展示文章数据</p>
+<p>1编写URL代码<br>在typeidea/urls.py下添加代码：</p>
+<p>“””</p>
+<p>from django.conf.urls import url<br>from django.contrib import admin</p>
+<p>from .custom_site import custom_site<br>from blog.views import post_list,post_detail<br>from config.views import links</p>
+<p>urlpatterns = [<br>    url(r’^$’,post_list),<br>    url(r’^category/(?P<category_id>\d+)/$’,post_list),<br>    url(r’^tag/(?P<tag_id>\d+)/$’,post_list),<br>    url(r’^post/(?P<post_id>\d+).html$’,post_detail),<br>    url(r’^links/$’,links),<br>    url(‘^super_admin/‘, admin.site.urls),<br>    url(r’^admin/‘, custom_site.urls),<br>]<br>“””</p>
+<p>1编写View代码<br>在config/views.py填写代码：</p>
+<p>“””<br>from django.http import HttpResponse</p>
+<p>def links(request):<br>    return HttpResponse(‘links’)<br>“””</p>
+<p>在blog/views.py下添加代码：</p>
+<p>“””<br>from django.shortcuts import render</p>
+<p>def post_list(request,category_id=None,tag_id=None):<br>    return render(request, ‘blog/list.html’, context=context)</p>
+<p>def post_detail(request,post_id=None):<br>    return render(request, ‘blog/detail.html’, context=context)</p>
+<p>“””</p>
+<p>二.配置模板</p>
+<p>1.创建typeidea/typeidea/templates/blog&amp;config文件夹<br>并在blog下创建list.html和detail.html文件</p>
+<p>此时运行会提示错误：TemplateDoesNotExist at /blog/list.html<br>也就是未找到这个模板，在settings/INSTALLED_APPS下没有这个模板，或者名字写错了<br>在INSTALLED_APPS修改如下：</p>
+<p>INSTALLED_APPS = [<br>     ‘typeidea’  #增加这个app<br>]</p>
+<p>2.重构post_list视图</p>
+<p>在blog/models.py/Post下添加代码：</p>
+<p>“””<br>class Post(models.Model):<br>    #省略其他代码<br>    @staticmethod<br>    def get_by_tag(tag_id):<br>        try:<br>            tag=Tag.objects.get(id=tag_id)<br>        except Tag.DoesNotExist:<br>            tag = None<br>            post_list = []<br>        else:<br>            post_list = tag.post_set.filter(status=Post.STATUS_NORMAL)<br>            .select_related(‘owner’,’category’)</p>
+<pre><code>    return post_list,tag
+
+@staticmethod
+def get_by_category(category_id):
+    try:
+        category = Category.objects.get(id=category_id)
+    except Category.DoesNotExist:
+        category = None
+        post_list = []
+    else:
+        post_list = category.post_set.filter(status=Post.STATUS_NORMAL)\
+        .select_related(&apos;owner&apos;,&apos;category&apos;)
+
+    return post_list,category
+
+@classmethod
+def latest_posts(cls):
+    queryset = cls.objects.filter(status=cls.STATUS_NORMAL)
+    return queryset</code></pre><p>“””</p>
+<p>在blog/models.py/Category下添加代码：</p>
+<p>“””</p>
+<p>class Category(models.Model):<br>    #省略其他代码<br>        @classmethod<br>    def get_navs(cls):<br>        categories  =cls.objects.filter(status=cls.STATUS_NORMAL)<br>        nav_categories = []<br>        normal_categories = []<br>        for cate in categories:<br>            if cate.is_nav:<br>                nav_categories.append(cate)<br>            else:<br>                normal_categories.append(cate)</p>
+<pre><code>return {
+    &apos;navs&apos;:nav_categories,
+    &apos;categories&apos;: normal_categories,
+}</code></pre><p>3.修改blog/views下的代码：<br>“””</p>
+<p>from django.shortcuts import render</p>
+<p>from .models import Post,Tag,Category</p>
+<p>def post_list(request,category_id=None,tag_id=None):<br>    tag = None<br>    category = None</p>
+<pre><code>if tag_id:
+    post_list,tag = Post.get_by_tag(tag_id)
+elif category_id:
+    post_list,category = Post.get_by_category(category_id)
+else:
+    post_list = Post.latest_posts()
+
+context = {
+    &apos;category&apos;: category,
+    &apos;tag&apos;: tag,
+    &apos;post_list&apos;: post_list
+}
+context.update(Category.get_navs())
+return render(request, &apos;blog/list.html&apos;, context=context)</code></pre><p>def post_detail(request,post_id=None):<br>    try:<br>        post = Post.objects.get(id=post_id)<br>    except Post.DoesNotExist:<br>        post = None</p>
+<pre><code>context = {
+    &apos;post&apos;:post,
+}
+
+context.update(Category.get_navs())
+
+return render(request, &apos;blog/detail.html&apos;, context=context)</code></pre><p>“””</p>
+<p>4.编写list.html和detail.html的代码部分：</p>
+<p>list.html:</p>
+<p>“””</p>
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <title>typeidea博客系统</title>
+<meta name="generator" content="Hexo 4.2.0"></head>
+<body>
+<div>顶部分类:
+    
+</div>
+<hr/>
+
+
+
+
+<ul>
+
+</ul>
+<hr/>
+<div>底部分类：
+    
+</div>
+</body>
+</html>
+
+<p>“””</p>
+<p>detail.html:</p>
+<p>“””</p>
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <title>typeidea博客系统</title>
+</head>
+<body>
+<div>顶部分类:
+    
+</div>
+<hr/>
+
+<hr/>
+<div>底部分类：
+    
+</div>
+</body>
+</html>
+
+<p>“””</p>
+<p>遇到的问题：<br>return render(request, ‘blog/list.html’, context={‘post’:’post’})<br>中后一个post多加了个引号，导致数据传输错误，无法显示博客文章</p>
+<p>目前进度★</p>
+
+            <!--[if lt IE 9]><script>document.createElement('audio');</script><![endif]-->
+            <audio id="audio" loop="1" preload="auto" controls="controls" data-autoplay="false">
+                <source type="audio/mpeg" src="">
+            </audio>
+            
+                <ul id="audio-list" style="display:none">
+                    
+                        
+                            <li title='0' data-url='http://link.hhtjim.com/163/5146554.mp3'></li>
+                        
+                    
+                        
+                            <li title='1' data-url='http://link.hhtjim.com/qq/001faIUs4M2zna.mp3'></li>
+                        
+                    
+                </ul>
+            
+        </div>
+        
+    <div id='gitalk-container' class="comment link"
+        data-ae='false'
+        data-ci=''
+        data-cs=''
+        data-r=''
+        data-o=''
+        data-a=''
+        data-d='false'
+    >查看评论</div>
+
+
+    </div>
+    
+</div>
+
+
+    </div>
+</div>
+</body>
+
+<script src="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+
+
+<script src="//lib.baomitu.com/jquery/1.8.3/jquery.min.js"></script>
+<script src="/js/plugin.js"></script>
+<script src="/js/diaspora.js"></script>
+
+
+<link rel="stylesheet" href="/photoswipe/photoswipe.css">
+<link rel="stylesheet" href="/photoswipe/default-skin/default-skin.css">
+
+
+<script src="/photoswipe/photoswipe.min.js"></script>
+<script src="/photoswipe/photoswipe-ui-default.min.js"></script>
+
+
+<!-- Root element of PhotoSwipe. Must have class pswp. -->
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+    <!-- Background of PhotoSwipe. 
+         It's a separate element as animating opacity is faster than rgba(). -->
+    <div class="pswp__bg"></div>
+    <!-- Slides wrapper with overflow:hidden. -->
+    <div class="pswp__scroll-wrap">
+        <!-- Container that holds slides. 
+            PhotoSwipe keeps only 3 of them in the DOM to save memory.
+            Don't modify these 3 pswp__item elements, data is added later on. -->
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+        <!-- Default (PhotoSwipeUI_Default) interface on top of sliding area. Can be changed. -->
+        <div class="pswp__ui pswp__ui--hidden">
+            <div class="pswp__top-bar">
+                <!--  Controls are self-explanatory. Order can be changed. -->
+                <div class="pswp__counter"></div>
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+                <!-- Preloader demo http://codepen.io/dimsemenov/pen/yyBWoR -->
+                <!-- element will get class pswp__preloader--active when preloader is running -->
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                      <div class="pswp__preloader__cut">
+                        <div class="pswp__preloader__donut"></div>
+                      </div>
+                    </div>
+                </div>
+            </div>
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div> 
+            </div>
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+</html>
